@@ -1,10 +1,13 @@
+#include "analogWrite.h"
+#include "esp32-hal.h"
+#include "Arduino.h"
 // #include <Arduino.h>
 #include "defs.h"
 #include <ESP32Servo.h>
+#define DRIVESPEED 64
 
 
-Servo steeringservo;
-
+// Servo steeringservo;
 
 
 //BLinking function
@@ -18,27 +21,27 @@ void indicate(int indicator)
 //Forward direction
 void driveforward()
 {
-    digitalWrite(in1, HIGH);
-    digitalWrite(in2, LOW);
+    analogWrite(in3, DRIVESPEED);
+    digitalWrite(in4, LOW);
 }
 
 //Reverse direction
 void drivereverse()
 {
-    digitalWrite(in1, LOW);
-    digitalWrite(in2, HIGH);
+    analogWrite(in4, DRIVESPEED);
+    digitalWrite(in3, LOW);
 }
 
 void brake()
 {
-    digitalWrite(in1, HIGH);
-    digitalWrite(in2, HIGH);
+    analogWrite(in3, 0);
+    analogWrite(in4, 0);
 }
 
 //PWM to motor
 void drivemotor(int avalue)
 {
-    analogWrite(ena, avalue);
+    // analogWrite(ena, avalue);
 }
 
 //Time variables
@@ -174,30 +177,31 @@ int steerangle = 75;
 
 void steerinit()
 {
-  steeringservo.attach(servopin);
+  // steeringservo.attach(servopin);
 }
 
 //Turn right
 void steeright()
 {
-    steerangle = steerangle + 1;
-    steerangle = constrain(steerangle, 42, 126);
-    steeringservo.write(steerangle);
+    // analogWrite(enb, HIGH);
+    analogWrite(in1, 126);
+    analogWrite(in2, 0);
 }
 
 //Turn left
 void steerleft()
 {
-    steerangle = steerangle - 1;
-    steerangle = constrain(steerangle, 42, 126);
-    steeringservo.write(steerangle);
+    // analogWrite(enb, 126);
+    analogWrite(in1, 0);
+    analogWrite(in2, 126);
 }
 
 //Straight ahead
-void drivestraight()
+void steeringOff()
 {
-    steerangle = 75;
-    steeringservo.write(steerangle);
+    // digitalWrite(enb, LOW);
+    analogWrite(in1, 0);
+    analogWrite(in2, 0);
 }
 
 
@@ -209,24 +213,24 @@ void steer()
     // leftstate = digitalRead(leftsteer);
     // centerstate = digitalRead(centresteer);
 
-    if(rightstate == 0 && leftstate == 0 && centerstate == 0)
-    {
-        steerangle = steerangle;
-    }
-    else if(rightstate == 0 && leftstate == 1 && centerstate == 0)
-    {
-        steerleft();
-    }
-    else if(rightstate == 1 && leftstate == 0 && centerstate == 0)
-    {
-        steeright();
-    }
-    else if(rightstate == 0 && leftstate == 0 && centerstate == 1)
-    {
-        drivestraight();
-    }
-    else
-    {
-        steerangle = steerangle;
-    }
+    // if(rightstate == 0 && leftstate == 0 && centerstate == 0)
+    // {
+    //     steerangle = steerangle;
+    // }
+    // else if(rightstate == 0 && leftstate == 1 && centerstate == 0)
+    // {
+    //     steerleft();
+    // }
+    // else if(rightstate == 1 && leftstate == 0 && centerstate == 0)
+    // {
+    //     steeright();
+    // }
+    // else if(rightstate == 0 && leftstate == 0 && centerstate == 1)
+    // {
+    //     drivestraight();
+    // }
+    // else
+    // {
+    //     steerangle = steerangle;
+    // }
 }

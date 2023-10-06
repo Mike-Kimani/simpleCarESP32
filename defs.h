@@ -6,6 +6,9 @@
 #define in1 16
 #define in2 13
 #define ena 15
+#define in3 4
+#define in4 27
+#define enb 15
 #define lin 26
 #define rin 33
 
@@ -17,6 +20,11 @@
 int accelerator_state = 0;
 int decelerator_state = 0;
 int emergency_state = 0;
+
+bool steeringStarted;
+unsigned long startSteerTime;
+unsigned long currentSteerTime;
+unsigned long desiredSteerTime;
 
 //Servo pin
 #define servopin 32

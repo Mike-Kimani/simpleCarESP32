@@ -18,6 +18,9 @@ void setup() {
   pinMode(in1, OUTPUT);
   pinMode(in2, OUTPUT);
   pinMode(ena, OUTPUT);
+  pinMode(in3, OUTPUT);
+  pinMode(in4, OUTPUT);
+  pinMode(enb, OUTPUT);
   pinMode(lin, OUTPUT);
   pinMode(rin, OUTPUT);
   pinMode(servopin, OUTPUT);
@@ -28,54 +31,90 @@ void setup() {
   Serial.begin(115200);
   Serial.println("Car Bluetooth Started! Ready to pair...");
   BTData = 0;
-  steerinit();
+  desiredSteerTime = 500;
+  steeringStarted = false;
+  Serial.print("setup() is running on core ");
+  Serial.println(xPortGetCoreID());
+  xTaskCreatePinnedToCore(Task_Code, "Task_Code", 4096, NULL, 3, NULL, 1);
+}
+
+
+
+void Task_Code(void *pv) {
+  while (1) {
+    if(CarBT.available()) {
+      bool steering = false;
+      if (BTData == '3' || BTData == '4') {
+        steering = true;
+      }
+      BTData = CarBT.read();
+      if (steering && (BTData == '3' || BTData == '4')) {
+        startSteerTime = millis();
+        Serial.println("HOLDING STEERING");
+      }
+      // Serial.write(BTData);
+    }
+
+    digitalWrite(ena, HIGH);
+
+    if (BTData == '1') {
+      driveforward();
+      Serial.println("FORWARD");
+    }
+    if (BTData == '2') {
+      brake();
+      steeringOff();
+      Serial.println("BRAKE");
+    }
+
+    if (BTData == '4') {
+      digitalWrite(rin, HIGH);
+      digitalWrite(lin, LOW);
+      if (steeringStarted == false) {
+        startSteerTime = millis();
+        steeringStarted = true;
+      }
+      currentSteerTime = millis();
+      if ((currentSteerTime - startSteerTime) < desiredSteerTime) {
+        steeright();
+      } else {
+        steeringStarted = false;
+        BTData = '0';
+        steeringOff();
+      }
+
+      Serial.println(steerangle);
+      // Serial.println("RIGHT");
+    }
+
+    if (BTData == '3') {
+      digitalWrite(lin, HIGH);
+      digitalWrite(rin, LOW);
+      if (steeringStarted == false) {
+        startSteerTime = millis();
+        steeringStarted = true;
+      }
+      currentSteerTime = millis();
+      if ((currentSteerTime - startSteerTime) < desiredSteerTime) {
+        steerleft();
+      } else {
+        steeringStarted = false;
+        steeringOff();
+        BTData = '0';
+      }
+      Serial.println(steerangle);
+    }
+
+    /* If received Character is 0, then turn OFF the LED */
+    if (BTData == '0') {
+      digitalWrite(lin, LOW);
+      digitalWrite(rin, LOW);
+    }
+  }
+  // put your main code here, to run repeatedly:
+
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
   
-  if(CarBT.available())
-  {
-    BTData = CarBT.read();
-    // Serial.write(BTData);
-  }
-
-  digitalWrite(ena, HIGH);
-
-  if(BTData == '1')
-  {
-    driveforward();
-    Serial.println("FORWARD");
-  }
-  if(BTData == '2')
-  {
-    brake();
-    drivestraight();
-    Serial.println("BRAKE");
-  }
-
-  if(BTData == '4')
-  {
-    steeright();
-    Serial.println(steerangle);
-    digitalWrite(rin, HIGH);
-    digitalWrite(lin, LOW);
-    // Serial.println("RIGHT");
-  }
-
-  if(BTData == '3')
-  {
-    steerleft();
-    digitalWrite(lin, HIGH);
-    digitalWrite(rin, LOW);
-    Serial.println(steerangle);
-    // Serial.println("LEFT");
-  }
-  
-  /* If received Character is 0, then turn OFF the LED */
-  if(BTData == '0')
-  {
-    digitalWrite(ledPIN, LOW);
-  }
 }
-
